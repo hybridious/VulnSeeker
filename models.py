@@ -1,6 +1,6 @@
 from db import Base
 from sqlalchemy import event
-from sqlalchemy import Column, Float, String, Text
+from sqlalchemy import Column, Float, String, Text, Integer
 from elasticsearch import Elasticsearch
 
 
@@ -10,7 +10,7 @@ class Entry(Base):
     cve_id = Column(String)
     cvss_score = Column(Float)
     version = Column(String)
-    description = Column(Text(length=500))
+    description = Column(Text)
     product_name = Column(String)
 
 def after_entry_insert(mapper, connection, target):

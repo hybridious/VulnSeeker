@@ -1,14 +1,38 @@
-from flask import Flask, jsonify, request
-from flask.ext.sqlalchemy import SQLAlchemy
+from flask import Flask, jsonify, request, Response
 from elasticsearch import Elasticsearch
 import psycopg2, json
+from db import Session
+from models import Entry
+import pdb
 
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:postgres@localhost/postgres'
-db = SQLAlchemy(app)
 
-import pdb
+
+@app.route('/api/entries', methods=["GET", "POST"])
+def list_entries():
+    if request.method == 'POST':
+        data = json.loads(request.data)
+        cve_id = data.get('cve_id')
+        cvss_score = data.get('cvss_score')
+        version = data.get('version')
+        description = data.get('description')
+        product_name = data.get('product_name')
+
+        session = Session()
+        entry = Entry(cve_id=cve_id, cvss_score=cvss_score, version=version, description=description, product_name=product_name)
+        session.add(entry)
+        session.commit()
+
+        return 'ok'
+
+    else:
+        session = Session()
+        entries = session.query(Entry).all()
+        return Response(json.dumps(
+            [{"title": x.title, "content": x.content} for x in entries]),
+                        mimetype='application/json')
+
 
 @app.route('/api/search', methods=['POST'])
 def search():
